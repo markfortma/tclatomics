@@ -1,9 +1,9 @@
-# tclblocks.py
-#
-# This is a function from a much larger project, and it has been stripped down for demonstration purposes.
-#
-# Requires: Python v3.3 or newer
+#!/usr/bin/env python3
 
+# This is a function from a much larger project, and it has been stripped down for demonstration purposes.
+
+__author__ = 'Matthew Markfort <matthew.markfort@gmail.com>'
+__version__ = '1.0'
 __date__ = '2016-05-09'
 
 tclcode = str()
