@@ -94,4 +94,4 @@ if __name__ == '__main__':
     HTTP::redirect "https://[HTTP::host][HTTP::uri]"
 }'''
     print(tclblocks())
-    # Output: (['when HTTP_REQUEST', 'HTTP::redirect', '"https://[HTTP::host][HTTP::uri]"'], 75)
+    # Output: (['when HTTP_REQUEST', 'HTTP::redirect "https://[HTTP::host][HTTP::uri]"'], 75)
