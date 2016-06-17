@@ -1,4 +1,4 @@
-# tclblocks
+# tclatomics.py
 
 This is a small snippet from a larger project. It
 has been distilled to the bare minimum as a demonstration.
