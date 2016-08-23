@@ -6,7 +6,7 @@ __author__ = 'Matthew Markfort <matthew.markfort@gmail.com>'
 __version__ = '1.0'
 __date__ = '2016-05-09'
 
-tclcode = str()
+tclcode = ''
 
 def tclblocks(start=0):
     """
@@ -17,8 +17,8 @@ def tclblocks(start=0):
     """
     global tclcode
     bracecount = 0
-    buffer = str()
-    blocks = list()
+    buffer = ''
+    blocks = []
     ignore = False
     inquote = False
     incommand = 0
@@ -48,7 +48,7 @@ def tclblocks(start=0):
                 buffer = buffer.strip()  # Clean off any whitespace fore and aft
                 if len(buffer):
                     blocks.append(buffer)
-                buffer = str()
+                buffer = ''
         elif tclcode[dex] == ';':
             if inquote:
                 buffer += tclcode[dex]
@@ -56,7 +56,7 @@ def tclblocks(start=0):
                 buffer = buffer.strip()  # Clean off any whitespace fore and aft
                 if len(buffer):
                     blocks.append(buffer)
-                buffer = str()
+                buffer = ''
         elif tclcode[dex] == '{':
             bracecount += 1
             if incommand != 0:
@@ -69,12 +69,12 @@ def tclblocks(start=0):
                     blocks.append(buffer)
                 temp, dex = tclblocks(dex + 1)
                 blocks += temp
-                buffer = str()
+                buffer = ''
             else:
                 buffer = buffer.strip()
                 if len(buffer):
                     blocks.append(buffer)
-                buffer = str()
+                buffer = ''
         elif tclcode[dex] == '}':
             bracecount -= 1
             if incommand != 0:
@@ -90,7 +90,7 @@ def tclblocks(start=0):
                 buffer = buffer.strip()
                 if len(buffer):
                     blocks.append(buffer)
-                buffer = str()
+                buffer = ''
         elif not ignore:
             buffer += tclcode[dex]
         dex += 1
@@ -122,6 +122,36 @@ comment
         HTTP::respond 200 content [subst $html_response_string] ; # This is a inline comment
     }
   }
+}
+ltm rule /Common/more_sample_rules {
+when HTTP_REQUEST {
+# This is a simple comment
+    set pref_state {#someToken#}
+    if { [HTTP::uri] equals "/cacti" } {
+        HTTP::redirect "https://[getfield [HTTP::host] ":" 1][HTTP::uri]"
+    } #else {
+      #    drop
+      #}
+}
+}
+ltm virtual /Common/www.sample.com_vs {
+    destination 10.10.10.10:80
+    ip-protocol tcp
+    persist {
+        cookie {
+            default yes
+        }
+    }
+    profiles {
+        http {}
+    }
+    rules {
+        /Common/test_html_rule
+    }
+    vlans-enabled
+    vlans {
+        vlan900
+    }
 }
 '''
     res, dex = tclblocks()
