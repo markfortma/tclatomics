@@ -20,13 +20,16 @@ def tclblocks(start=0):
     buffer = str()
     blocks = list()
     ignore = False
-    inquote = 0
+    inquote = False
     incommand = 0
     dex = start
     sector = len(tclcode)
     while dex < sector:
         if tclcode[dex] == '"':
-            inquote += 1
+            if inquote:
+                inquote = False if not buffer.endswith('\\') else True
+            else:
+                inquote = True
             buffer += tclcode[dex]
         elif tclcode[dex] == '[':
             incommand += 1
@@ -35,15 +38,19 @@ def tclblocks(start=0):
             incommand -= 1
             buffer += tclcode[dex]
         elif tclcode[dex] == '#':
-            ignore = True
+            if inquote is False:
+                ignore = True
+            else:
+                buffer += tclcode[dex]
         elif tclcode[dex] == '\n':
-            ignore = False
-            buffer = buffer.strip()  # Clean off any whitespace fore and aft
-            if len(buffer):
-                blocks.append(buffer)
-            buffer = str()
+            ignore = False if not buffer.endswith('\\') else True
+            if ignore is False:
+                buffer = buffer.strip()  # Clean off any whitespace fore and aft
+                if len(buffer):
+                    blocks.append(buffer)
+                buffer = str()
         elif tclcode[dex] == ';':
-            if inquote > 0:
+            if inquote:
                 buffer += tclcode[dex]
             else:
                 buffer = buffer.strip()  # Clean off any whitespace fore and aft
@@ -54,7 +61,7 @@ def tclblocks(start=0):
             bracecount += 1
             if incommand != 0:
                 buffer += tclcode[dex]
-            elif inquote % 2 != 0:
+            elif inquote:
                 buffer += tclcode[dex]
             elif bracecount % 2 != 0:
                 buffer = buffer.strip()
@@ -72,7 +79,7 @@ def tclblocks(start=0):
             bracecount -= 1
             if incommand != 0:
                 buffer += tclcode[dex]
-            elif inquote % 2 != 0:
+            elif inquote:
                 buffer += tclcode[dex]
             elif bracecount % 2 == 0:
                 buffer = buffer.strip()
@@ -90,8 +97,32 @@ def tclblocks(start=0):
     return blocks, dex
 
 if __name__ == '__main__':
-    tclcode = '''when HTTP_REQUEST {
-    HTTP::redirect "https://[HTTP::host][HTTP::uri]"
-}'''
-    print(tclblocks())
+    tclcode = '''ltm rule /Common/test_html_rule {
+when HTTP_REQUEST {
+    set html_response_string "
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Error Page</title>
+        <style type=\"text/css\">
+            #div {
+                 text-align: center;
+                 text-color: #909090;
+            }
+        </style>
+    <head>
+    <body>
+        <p>This is just some sample<div id=\"div\">big stuff</div></p>
+    </body>
+    </html>
+    "
+    if { [HTTP::uri] contains "php" } {
+        HTTP::respond 200 content [subst $html_response_string]
+    }
+  }
+}
+'''
+    res, dex = tclblocks()
     # Output: (['when HTTP_REQUEST', 'HTTP::redirect "https://[HTTP::host][HTTP::uri]"'], 75)
+    for item in res:
+        print(item)
