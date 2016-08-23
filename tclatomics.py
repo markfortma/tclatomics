@@ -99,6 +99,8 @@ def tclblocks(start=0):
 if __name__ == '__main__':
     tclcode = '''ltm rule /Common/test_html_rule {
 when HTTP_REQUEST {
+    # This is a multiline \
+comment
     set html_response_string "
     <!DOCTYPE html>
     <html>
@@ -117,12 +119,11 @@ when HTTP_REQUEST {
     </html>
     "
     if { [HTTP::uri] contains "php" } {
-        HTTP::respond 200 content [subst $html_response_string]
+        HTTP::respond 200 content [subst $html_response_string] ; # This is a inline comment
     }
   }
 }
 '''
     res, dex = tclblocks()
-    # Output: (['when HTTP_REQUEST', 'HTTP::redirect "https://[HTTP::host][HTTP::uri]"'], 75)
     for item in res:
         print(item)
